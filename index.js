@@ -9,6 +9,8 @@ const repos = new Server(path.resolve(__dirname, 'tmp'), {
 
 const port = process.env.PORT || 7005;
 
+app.use('/console', express.static(__dirname + '/console'));
+
 app.use('/git', function(req, res) {
   repos.handle(req, res)
 });

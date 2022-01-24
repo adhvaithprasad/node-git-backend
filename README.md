@@ -1,4 +1,4 @@
-# Novaspace
+# Say hi to Novaspace
 A more better way to host your repos online without hassle. An open sourced ecosystem which considers its developers to be a king (or queen).
 ## How to use it
 Novaspace runs anywhere where there is nodejs .
@@ -23,8 +23,11 @@ MIT
     index.js  
     package-lock.json
     package.json
-
-    ./frontend:
+    .eslintrc.json
+    ./.github
+     ./workflows
+       nodejs.yml
+    ./console:
        404.svg      
        kanban.css  
        modal.js   

@@ -5,6 +5,8 @@ $(window).on('hashchange', function() {
 
 
 
+
+
 firebase.auth().onAuthStateChanged((user) => {
   if (user) {
 document.querySelector(".loading-screen").style.display="none";

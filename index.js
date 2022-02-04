@@ -14,8 +14,8 @@ var Git = require("nodegit");
 const { getDatabase } = require('firebase-admin/database');
 
 const db = getDatabase();
-var ref = db.ref('/');
-const __dirname = path.resolve();
+let ref = db.ref('/');
+const dirTree = require('directory-tree');
 
 const repos = new Server(path.resolve(__dirname, 'tmp'), {
   autoCreate: true
@@ -31,14 +31,28 @@ repos.on('push', (push) => {
 
   push.accept();
   
+function replaceAll(str, find, replace) {
+                var escapedFind = find.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+                return str.replace(new RegExp(escapedFind, 'g'), replace);
+              }
+const convert = require('amrhextotext');
+  var clone_link = "https://jk.adhvaithprasad.repl.co/git/" + push.repo;
+  ref = db.ref('/'+push.repo + '/' + push.branch + '/'+push.commit);
+      var folder = "./repos/"+push.repo;
+  Git.Clone(clone_link, "./repos/"+push.repo)
+  .then(function(){
 
-  console.log(push)
+    const filteredTree = dirTree('./repos/'+push.repo, {attributes:['type']});
 
-  var clone_link = "https://g.adhvaithprasad.repl.co/" + push.repo;
-  Git.Clone(clone_link, "./repos")
+
+const hextree = JSON.stringify(filteredTree);
+var reponame = replaceAll(push.repo,".","--dot--")
+ref.child("treeview").child(reponame).set({
+                treeview:hextree
+              });
+
+  })
     .then(function recursive() {
-
-      var folder = "./repos";
 
       getDirectories(folder, function(err, res) {
         if (err) {
@@ -60,21 +74,20 @@ repos.on('push', (push) => {
             var mnk = isDir(element);
             if (mnk === true) {
               // falsy
-            console.log("false")
+           
             }
             else {
 
-              function replaceAll(str, find, replace) {
-                var escapedFind = find.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-                return str.replace(new RegExp(escapedFind, 'g'), replace);
-              }
-              var kElement = replaceAll(element, "./repos", push.repo)
+              
+              var kElement = replaceAll(element, "./repos/"+push.repo, "")
               var mElement = replaceAll(kElement, ".", "--dot--");
-              var filepath = fs.readFileSync(element);
-              var filevalue = filepath.toString()
+
+             
+              var filevalue = convert.textToHex(fs.readFileSync(element).toString());
               ref.child("storage").child(mElement).set({
                 value: filevalue
               });
+              
 
             }
 
@@ -84,20 +97,7 @@ repos.on('push', (push) => {
       });
 
     })
-    .then(function info() {
-      var commit = push.commit;
-      var username = push.username;
-      var repo = push.repo;
-      var branch = push.branch;
-      ref.child("repo-info").child(repo).set({
-        user: username,
-        commit: commit,
-        branch: branch
-      });
-
-
-
-    })
+    
 
 
 
@@ -110,6 +110,9 @@ repos.on('push', (push) => {
 
 });
 
+repos.on('fetch', (fetch)=>{
+  fetch.accept();
+})
 
 app.use('/console', express.static(__dirname + '/console'));
 
@@ -117,6 +120,8 @@ app.use('/git', function(req, res) {
   repos.handle(req, res)
 });
 
+
+
 app.listen(port, () => {
-  console.log(`Express http server listening`);
+//
 });

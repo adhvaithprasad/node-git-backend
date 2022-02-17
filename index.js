@@ -114,13 +114,25 @@ repos.on('fetch', (fetch)=>{
   fetch.accept();
 })
 
-app.use('/console', express.static(__dirname + '/console'));
 
-app.use('/git', function(req, res) {
-  repos.handle(req, res)
+
+
+
+
+
+
+var useragent = require('express-useragent');
+ 
+app.use(useragent.express());
+app.use('/', function(req, res) {
+  if(req.useragent.browser === "git"){
+    console.log("git")
+repos.handle(req, res)
+  }
+  else{
+    res.send('hi')
+  }
 });
-
-
 
 app.listen(port, () => {
 //
